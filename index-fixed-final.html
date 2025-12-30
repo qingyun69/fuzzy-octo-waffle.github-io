@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>云南野生菌图鉴 - 探索云南的野生菌世界</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2E7D32',  // 深绿色 - 代表自然和森林
+                        secondary: '#8D6E63', // 暖棕色 - 代表菌子
+                        accent: '#D4AF37',    // 金色 - 代表营养价值
+                        dark: '#2D2D2D',      // 深棕色 - 代替近黑色
+                        light: '#FAFAFA'      // 米白色 - 更自然的背景
+                    },
+                    fontFamily: {
+                        display: ['Noto Sans SC', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            }
+            .bg-gradient {
+                background: linear-gradient(135deg, #2E7D32 0%, #8D6E63 100%);
+            }
+            .mushroom-shadow {
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            }
+            .hover-lift {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+            .hover-lift:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            }
+        }
+    </style>
+    
+    <style>
+        body {
+            scroll-behavior: smooth;
+        }
+        .mushroom-decoration {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><ellipse cx="50" cy="80" rx="45" ry="20" fill="%232E7D32" opacity="0.1"/><path d="M5,80 Q50,40 95,80" fill="none" stroke="%232E7D32" stroke-width="2" opacity="0.2"/><circle cx="30" cy="70" r="5" fill="%238D6E63" opacity="0.1"/><circle cx="70" cy="75" r="3" fill="%238D6E63" opacity="0.1"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            width: 100px;
+            height: 100px;
+            position: absolute;
+            opacity: 0.5;
+        }
+        /* 滚动进度条 */
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: transparent;
+            z-index: 9999;
+        }
+        .progress-bar {
+            height: 4px;
+            background: linear-gradient(90deg, #2E7D32 0%, #8D6E63 100%);
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+        /* 图片查看器 */
+        .image-viewer {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        .image-viewer img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+        }
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+        }
+        /* 动画效果 */
+        .fade-in {
+            animation: fadeIn 1s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-light text-dark font-sans">
+    <!-- 滚动进度条 -->
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+    
+    <!-- 导航栏 -->
+    <nav id="navbar" class="fixed w-full bg-white/90 backdrop-blur-md shadow-md z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <i class="fa fa-leaf text-primary text-2xl mr-2"></i>
+                    <a href="#" class="text-xl font-bold text-dark">云南野生菌图鉴</a>
+                </div>
+                
+                <div class="hidden md:flex space-x-8">
+                    <a href="#home" class="text-dark hover:text-primary transition-colors font-medium">首页</a>
+                    <a href="#intro" class="text-dark hover:text-primary transition-colors font-medium">野生菌简介</a>
+                    <a href="#common" class="text-dark hover:text-primary transition-colors font-medium">常见野生菌</a>
+                    <a href="#poisonous" class="text-dark hover:text-primary transition-colors font-medium">有毒野生菌</a>
+                    <a href="#identification" class="text-dark hover:text-primary transition-colors font-medium">识别方法</a>
+                    <a href="#quiz" class="text-dark hover:text-primary transition-colors font-medium">趣味测试</a>
+                </div>
+                
+                <!-- 移动端菜单按钮 -->
+                <button id="mobile-menu-btn" class="md:hidden text-dark text-xl">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+            
+            <!-- 移动端菜单 -->
+            <div id="mobile-menu" class="md:hidden hidden mt-4 pb-4">
+                <div class="flex flex-col space-y-4">
+                    <a href="#home" class="text-dark hover:text-primary transition-colors font-medium">首页</a>
+                    <a href="#intro" class="text-dark hover:text-primary transition-colors font-medium">野生菌简介</a>
+                    <a href="#common" class="text-dark hover:text-primary transition-colors font-medium">常见野生菌</a>
+                    <a href="#poisonous" class="text-dark hover:text-primary transition-colors font-medium">有毒野生菌</a>
+                    <a href="#identification" class="text-dark hover:text-primary transition-colors font-medium">识别方法</a>
+                    <a href="#quiz" class="text-dark hover:text-primary transition-colors font-medium">趣味测试</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- 首页头部 -->
+    <header id="home" class="relative h-screen flex items-center justify-center overflow-hidden">
+        <!-- 背景图片 -->
+        <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1592726672830-3da58f4d6f10?ixlib=rb-1.2.1&auto=format&fit=crop&w=2070&q=80');">
+            <div class="absolute inset-0 bg-black/50"></div>
+        </div>
+        
+        <!-- 头部内容 -->
+        <div class="container mx-auto px-4 z-10 text-center">
+            <h1 class="text-[clamp(2.5rem,6vw,4.5rem)] font-bold text-white text-shadow mb-4 animate-fadeIn">
+                云南野生菌图鉴
+            </h1>
+            <p class="text-[clamp(1rem,2vw,1.5rem)] text-gray-200 mb-8 max-w-3xl mx-auto">
+                探索云南丰富多彩的野生菌世界，了解常见野生菌和有毒野生菌的识别方法
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#common" class="bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-8 rounded-full transition-all duration-300 shadow-lg hover-lift">
+                    探索常见野生菌
+                </a>
+                <a href="#identification" class="bg-white hover:bg-white/90 text-primary font-semibold py-3 px-8 rounded-full transition-all duration-300 shadow-lg hover-lift">
+                    学习识别方法
+                </a>
+            </div>
+        </div>
+        
+        <!-- 滚动指示 -->
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white animate-bounce">
+            <a href="#intro" class="flex flex-col items-center">
+                <span class="mb-2">向下滚动</span>
+                <i class="fa fa-chevron-down"></i>
+            </a>
+        </div>
+    </header>
+    
+    <!-- 野生菌简介 -->
+    <section id="intro" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="font-display font-bold text-[clamp(1.8rem,4vw,2.5rem)] mb-4">野生菌简介</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">
+                    云南是中国野生菌资源最丰富的地区之一，拥有超过800种野生菌，其中可食用的有200多种
+                </p>
+                <div class="w-24 h-1 bg-gradient mx-auto mt-4"></div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- 卡片1 -->
+                <div class="bg-light rounded-xl p-8 shadow-md hover-lift">
+                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                        <i class="fa fa-tree text-primary text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">丰富的种类</h3>
+                    <p class="text-gray-600">
+                        云南拥有全国约70%的野生菌种类，从常见的牛肝菌、鸡枞菌到珍稀的松茸、干巴菌，种类繁多
+                    </p>
+                </div>
+                
+                <!-- 卡片2 -->
+                <div class="bg-light rounded-xl p-8 shadow-md hover-lift">
+                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                        <i class="fa fa-map-marker text-primary text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">独特的地理环境</h3>
+                    <p class="text-gray-600">
+                        云南独特的气候和地理条件为野生菌的生长提供了理想的环境，高海拔、多雨、温暖的气候促进了野生菌的生长
+                    </p>
+                </div>
+                
+                <!-- 卡片3 -->
+                <div class="bg-light rounded-xl p-8 shadow-md hover-lift">
+                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                        <i class="fa fa-cutlery text-primary text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">饮食文化</h3>
+                    <p class="text-gray-600">
+                        野生菌是云南饮食文化的重要组成部分，每年的野生菌季节吸引着众多游客前来品尝美味
+                    </p>
+                </div>
+            </div>
+            
+            <!-- 数据统计 -->
+            <div class="mt-20 bg-gradient rounded-2xl p-12 text-white">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                    <div>
+                        <div class="text-4xl font-bold mb-2">800+</div>
+                        <div class="text-white/80">野生菌种类</div>
+                    </div>
+                    <div>
+                        <div class="text-4xl font-bold mb-2">200+</div>
+                        <div class="text-white/80">可食用种类</div>
+                    </div>
+                    <div>
+                        <div class="text-4xl font-bold mb-2">100+</div>
+                        <div class="text-white/80">有毒种类</div>
+                    </div>
+                    <div>
+                        <div class="text-4xl font-bold mb-2">3000万</div>
+                        <div class="text-white/80">年产量(公斤)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 常见野生菌 -->
+    <section id="common" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="font-display font-bold text-[clamp(1.8rem,4vw,2.5rem)] mb-4">常见野生菌</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">
+                    云南常见的可食用野生菌，味道鲜美，营养丰富
+                </p>
+                <div class="w-24 h-1 bg-gradient mx-auto mt-4"></div>
+            </div>
+            
+            <!-- 野生菌网格 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 鸡枞菌 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-md hover-lift mushroom-card">
+                    <div class="relative overflow-hidden h-64">
+                        <img src="素材/鸡枞.png" alt="鸡枞菌" class="w-full h-full object-contain transition-transform duration-500 hover:scale-110">
+                        <div class="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-full text-sm">
+                            可食用
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2 text-primary">鸡枞菌</h3>
+                        <p class="text-gray-600 mb-4">鸡枞菌是云南野生菌中的珍品，味道鲜美，香气浓郁，被誉为"菌中之王"。</p>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            <span>主要产地：全省各地</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 松茸 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-md hover-lift mushroom-card">
+                    <div class="relative overflow-hidden h-64">
+                        <img src="素材/松茸.png" alt="松茸" class="w-full h-full object-contain transition-transform duration-500 hover:scale-110">
+                        <div class="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-full text-sm">
+                            可食用
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2 text-primary">松茸</h3>
+                        <p class="text-gray-600 mb-4">松茸是世界上珍稀名贵的天然药用菌，被誉为"菌中之星"，具有独特的香味和丰富的营养价值。</p>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            <span>主要产地：迪庆、丽江、大理</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 牛肝菌 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-md hover-lift mushroom-card">
+                    <div class="relative overflow-hidden h-64">
+                        <img src="素材/牛肝.png" alt="牛肝菌" class="w-full h-full object-contain transition-transform duration-500 hover:scale-110">
+                        <div class="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-full text-sm">
+                            可食用
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2 text-primary">牛肝菌</h3>
+                        <p class="text-gray-600 mb-4">牛肝菌是云南野生菌中的常见品种，肉质肥厚，味道鲜美，是餐桌上的常客。</p>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            <span>主要产地：全省各地</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 青头菌 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-md hover-lift mushroom-card">
+                    <div class="relative overflow-hidden h-64">
+                        <img src="素材/青头.png" alt="青头菌" class="w-full h-full object-contain transition-transform duration-500 hover:scale-110">
+                        <div class="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-full text-sm">
+                            可食用
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2 text-primary">青头菌</h3>
+                        <p class="text-gray-600 mb-4">青头菌是云南野生菌中的常见品种，味道鲜美，营养丰富，适合多种烹饪方式。</p>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            <span>主要产地：全省各地</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 鸡油菌 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-md hover-lift mushroom-card">
+                    <div class="relative overflow-hidden h-64">
+                        <img src="素材/鸡油菌.png" alt="鸡油菌" class="w-full h-full object-contain transition-transform duration-500 hover:scale-110">
+                        <div class="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-full text-sm">
+                            可食用
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2 text-primary">鸡油菌</h3>
+                        <p class="text-gray-600 mb-4">鸡油菌因其颜色金黄，形似鸡油而得名，味道鲜美，具有独特的水果香味。</p>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            <span>主要产地：滇中、滇西</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 干巴菌 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-md hover-lift mushroom-card">
+                    <div class="relative overflow-hidden h-64">
+                        <img src="素材/干巴.png" alt="干巴菌" class="w-full h-full object-contain transition-transform duration-500 hover:scale-110">
+                        <div class="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-full text-sm">
+                            可食用
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2 text-primary">干巴菌</h3>
+                        <p class="text-gray-600 mb-4">干巴菌是云南特有的珍稀野生菌，味道独特，具有类似 behaviour 的香味。</p>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            <span>主要产地：滇中、滇南</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 有毒野生菌 -->
+    <section id="poisonous" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="font-display font-bold text-[clamp(1.8rem,4vw,2.5rem)] mb-4">有毒野生菌</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">
+                    云南常见的有毒野生菌，误食可能导致严重后果，甚至危及生命
+                </p>
+                <div class="w-24 h-1 bg-gradient mx-auto mt-4"></div>
+            </div>
+            
+            <!-- 有毒野生菌网格 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 致命鹅膏 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-md hover-lift mushroom-card">
+                    <div class="relative overflow-hidden h-64">
+                        <img src="素材/致命鹅膏.jpg" alt="致命鹅膏" class="w-full h-full object-contain transition-transform duration-500 hover:scale-110">
+                        <div class="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm">
+                            剧毒
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2 text-red-500">致命鹅膏</h3>
+                        <p class="text-gray-600 mb-4">致命鹅膏是世界上最毒的蘑菇之一，含有致命的鹅膏毒素，误食几克即可致命。</p>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                            <span>毒性等级：极毒</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 灰花纹鹅膏 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-md hover-lift mushroom-card">
+                    <div class="relative overflow-hidden h-64">
+                        <img src="素材/灰花纹鹅膏.png" alt="灰花纹鹅膏" class="w-full h-full object-contain transition-transform duration-500 hover:scale-110">
+                        <div class="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm">
+                            剧毒
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2 text-red-500">灰花纹鹅膏</h3>
+                        <p class="text-gray-600 mb-4">灰花纹鹅膏含有鹅膏毒素，毒性极强，误食后死亡率高。</p>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                            <span>毒性等级：极毒</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 条盖盔孢伞 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-md hover-lift mushroom-card">
+                    <div class="relative overflow-hidden h-64">
+                        <img src="素材/条盖盔孢伞.png" alt="条盖盔孢伞" class="w-full h-full object-contain transition-transform duration-500 hover:scale-110">
+                        <div class="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm">
+                            剧毒
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2 text-red-500">条盖盔孢伞</h3>
+                        <p class="text-gray-600 mb-4">条盖盔孢伞含有毒伞肽和毒肽，误食后会导致严重的肝肾功能损害。</p>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                            <span>毒性等级：极毒</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 亚稀褶红菇 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-md hover-lift mushroom-card">
+                    <div class="relative overflow-hidden h-64">
+                        <img src="素材/亚稀褶红菇.png" alt="亚稀褶红菇" class="w-full h-full object-contain transition-transform duration-500 hover:scale-110">
+                        <div class="absolute top-4 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-sm">
+                            有毒
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2 text-orange-500">亚稀褶红菇</h3>
+                        <p class="text-gray-600 mb-4">亚稀褶红菇是云南常见的有毒蘑菇，误食后会导致胃肠道症状，严重时可能导致死亡。</p>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-exclamation-triangle text-orange-500 mr-2"></i>
+                            <span>毒性等级：有毒</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 毒沟褶菌 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-md hover-lift mushroom-card">
+                    <div class="relative overflow-hidden h-64">
+                        <img src="素材/毒沟褶菌.png" alt="毒沟褶菌" class="w-full h-full object-contain transition-transform duration-500 hover:scale-110">
+                        <div class="absolute top-4 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-sm">
+                            有毒
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2 text-orange-500">毒沟褶菌</h3>
+                        <p class="text-gray-600 mb-4">毒沟褶菌含有毒物质，误食后会导致严重的胃肠道症状和肝肾功能损害。</p>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-exclamation-triangle text-orange-500 mr-2"></i>
+                            <span>毒性等级：有毒</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 黄盖鹅膏 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-md hover-lift mushroom-card">
+                    <div class="relative overflow-hidden h-64">
+                        <img src="素材/黄盖鹅膏.png" alt="黄盖鹅膏" class="w-full h-full object-contain transition-transform duration-500 hover:scale-110">
+                        <div class="absolute top-4 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-sm">
+                            有毒
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2 text-orange-500">黄盖鹅膏</h3>
+                        <p class="text-gray-600 mb-4">黄盖鹅膏含有毒物质，误食后会导致胃肠道症状和肝肾功能损害。</p>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-exclamation-triangle text-orange-500 mr-2"></i>
+                            <span>毒性等级：有毒</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 安全提示 -->
+            <div class="mt-16 bg-red-50 border-l-4 border-red-500 p-6 rounded-r-lg">
+                <h3 class="text-xl font-bold text-red-500 mb-3 flex items-center">
+                    <i class="fa fa-exclamation-circle mr-2"></i>
+                    安全提示
+                </h3>
+                <ul class="space-y-2 text-gray-700">
+                    <li class="flex items-start">
+                        <i class="fa fa-angle-right text-red-500 mt-1 mr-2"></i>
+                        <span>不认识的野生菌绝对不要食用，避免误食有毒野生菌</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fa fa-angle-right text-red-500 mt-1 mr-2"></i>
+                        <span>食用野生菌时一定要彻底煮熟，不要食用生的或半生的野生菌</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fa fa-angle-right text-red-500 mt-1 mr-2"></i>
+                        <span>不要混合食用多种野生菌，以免发生不良反应</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fa fa-angle-right text-red-500 mt-1 mr-2"></i>
+                        <span>食用野生菌后如出现不适症状，应立即就医，并保留剩余野生菌样本</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 识别方法 -->
+    <section id="identification" class="py-20 bg-[#1A1A1A] text-white relative overflow-hidden">
+        <!-- 菌子装饰 -->
+        <div class="mushroom-decoration" style="top: 15%; right: 10%; transform: scale(1.5) rotate(10deg);"></div>
+        <div class="mushroom-decoration" style="bottom: 20%; left: 5%; transform: scale(1.2) rotate(-15deg);"></div>
+        
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="font-display font-bold text-[clamp(1.8rem,4vw,2.5rem)] mb-4">野生菌识别方法</h2>
+                <p class="text-white max-w-2xl mx-auto">
+                    掌握正确的野生菌识别方法，可以有效防止误食毒菌，保障食用安全
+                </p>
+                <div class="w-24 h-1 bg-accent mx-auto mt-4"></div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <!-- 识别方法列表 -->
+                <div class="bg-white/5 backdrop-blur rounded-xl p-8 hover:shadow-lg transition-shadow">
+                    <h3 class="text-2xl font-bold mb-6 text-accent">七步识别法</h3>
+                    <ul class="space-y-6">
+                        <li class="flex">
+                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-primary flex items-center justify-center mr-4">
+                                <span class="font-bold">1</span>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold mb-1">看生长地点</h4>
+                                <p class="text-white">
+                                    可食用的无毒菌多生长在清洁的松树或栎树混交林；有毒菌一般生长在阴暗、潮湿的腐烂木材。
+                                </p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-primary flex items-center justify-center mr-4">
+                                <span class="font-bold">2</span>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold mb-1">看颜色</h4>
+                                <p class="text-white">
+                                    有毒菌菌盖颜色鲜艳，有红、绿、墨黑、青紫等颜色，特别是紫色的通常有剧毒，而且采摘后often很快会变色。
+                                </p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-primary flex items-center justify-center mr-4">
+                                <span class="font-bold">3</span>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold mb-1">看形状</h4>
+                                <p class="text-white">
+                                    无毒菌菌盖较平，菌面平滑，菌盖上无环，下部无菌托；有毒菌菌盖中央一般呈凸状，形状怪异，菌面厚实板硬。
+                                </p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-primary flex items-center justify-center mr-4">
+                                <span class="font-bold">4</span>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold mb-1">看分泌物</h4>
+                                <p class="text-white">
+                                    将采摘的新鲜野生菌撕断菌株，无毒菌的分泌物清亮如水，菌面折断不变色；有毒菌的分泌物稠密，一般呈赤褐色。
+                                </p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-primary flex items-center justify-center mr-4">
+                                <span class="font-bold">5</span>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold mb-1">闻气味</h4>
+                                <p class="text-white">
+                                    无毒菌有特殊香味，无异味；有毒菌有怪异味，如辛辣、酸涩、恶腥等味。
+                                </p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-primary flex items-center justify-center mr-4">
+                                <span class="font-bold">6</span>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold mb-1">借助显色反应</h4>
+                                <p class="text-white">
+                                    使用化学试剂或大蒜等物品进行显色反应，辅助判断野生菌的毒性。
+                                </p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-primary flex items-center justify-center mr-4">
+                                <span class="font-bold">7</span>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold mb-1">远离"三有"特征</h4>
+                                <p class="text-white">
+                                    远离"头上戴帽，腰上系裙，脚上穿靴"的野生菌，即同时具备菌盖、菌环、菌托这三种特征的野生菌。
+                                </p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- 食用安全指南 -->
+                <div class="bg-white/5 backdrop-blur rounded-xl p-8 hover:shadow-lg transition-shadow">
+                    <h3 class="text-2xl font-bold mb-6 text-accent">食用安全指南</h3>
+                    
+                    <div class="mb-8">
+                        <h4 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fa fa-check-circle text-primary mr-2"></i> 安全食用原则
+                        </h4>
+                        <ul class="space-y-3 text-white">
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-accent mt-1 mr-2"></i>
+                                <span>只吃认识的！绝不尝试陌生菌种。如果是名单上的菌，也请确认是常见可食用的品种。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-accent mt-1 mr-2"></i>
+                                <span>彻底煮熟，足够的高温和烹饪时间是解毒关键（像牛肝菌之类，特别是红葱这种娇贵的也要谨慎）。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-accent mt-1 mr-2"></i>
+                                <span>不混炒！不同菌种烹饪时间不同，分开煮更安全。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-accent mt-1 mr-2"></i>
+                                <span>吃菌不喝酒！酒精会加速毒素吸收，还可能和某些菌产生化学反应。</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-8">
+                        <h4 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fa fa-exclamation-triangle text-red-500 mr-2"></i> 中毒症状
+                        </h4>
+                        <ul class="space-y-3 text-white">
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-accent mt-1 mr-2"></i>
+                                <span>胃肠型：恶心、呕吐、腹痛、腹泻，通常在食用后1-6小时出现</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-accent mt-1 mr-2"></i>
+                                <span>神经精神型：幻觉、谵妄、抽搐、昏迷，通常在食用后0.5-4小时出现</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-accent mt-1 mr-2"></i>
+                                <span>溶血型：贫血、黄疸、血尿，通常在食用后6-12小时出现</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-accent mt-1 mr-2"></i>
+                                <span>肝肾损害型：肝肾功能衰竭，通常在食用后12-24小时出现，死亡率高</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fa fa-medkit text-primary mr-2"></i> 急救措施
+                        </h4>
+                        <ul class="space-y-3 text-white">
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-accent mt-1 mr-2"></i>
+                                <span>立即催吐：用手指或筷子 stimulus咽喉部，尽可能将胃内的食物吐出</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-accent mt-1 mr-2"></i>
+                                <span>及时就医：携带剩余野生菌样本，尽快前往医院治疗</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-accent mt-1 mr-2"></i>
+                                <span>保留样本：保留食用剩余的野生菌，以便医生准确诊断和治疗</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 数据可视化 -->
+            <div class="mt-16 bg-white/5 backdrop-blur rounded-xl p-8">
+                <h3 class="text-2xl font-bold mb-8 text-center text-accent">云南野生菌数据统计</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <!-- 饼图 -->
+                    <div>
+                        <canvas id="mushroomChart"></canvas>
+                    </div>
+                    <!-- 柱状图 -->
+                    <div>
+                        <canvas id="poisoningChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 趣味测试 -->
+    <section id="quiz" class="py-20 bg-gradient-to-br from-primary/10 to-secondary/10">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="font-display font-bold text-[clamp(1.8rem,4vw,2.5rem)] text-dark mb-4">野生菌知识测试</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">测试你对野生菌的了解程度，看看你是不是野生菌专家！</p>
+                <div class="w-24 h-1 bg-primary mx-auto mt-4"></div>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                <div class="p-6 md:p-10">
+                    <div class="flex flex-col md:flex-row gap-10">
+                        <div class="md:w-1/3">
+                            <h3 class="font-display font-bold text-2xl mb-4 text-primary">野生菌知识测试</h3>
+                            <p class="text-gray-600 mb-6">
+                                回答关于野生菌的问题，测试你对野生菌的了解程度。完成后可以获得专属称号哦！
+                            </p>
+                            
+                            <div class="bg-light p-5 rounded-lg mb-6">
+                                <div class="flex justify-between items-center mb-3">
+                                    <span class="font-bold">测试进度</span>
+                                    <span id="quiz-progress" class="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">1/5</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-3">
+                                    <div id="progress-bar" class="bg-primary h-2.5 rounded-full" style="width: 20%"></div>
+                                </div>
+                                <div class="flex justify-between items-center mb-3">
+                                    <span class="font-bold">当前得分</span>
+                                    <span id="quiz-score" class="bg-accent/10 text-dark px-3 py-1 rounded-full text-sm">0</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold">剩余时间</span>
+                                    <span id="quiz-timer" class="bg-dark/10 text-dark px-3 py-1 rounded-full text-sm">00:30</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-light p-5 rounded-lg mb-6">
+                                <h4 class="font-bold mb-3">测试说明</h4>
+                                <ul class="text-gray-600 list-disc pl-5 space-y-1 text-sm">
+                                    <li>共5道关于野生菌的问题</li>
+                                    <li>每道题有30秒答题时间</li>
+                                    <li>选择正确答案可获得20分</li>
+                                    <li>完成后将根据得分获得称号</li>
+                                </ul>
+                            </div>
+                            
+                            <button id="start-quiz" class="w-full bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3 rounded-lg transition-all transform hover:scale-105 mb-4">
+                                开始测试
+                            </button>
+                            
+                            <button id="reset-quiz" class="w-full bg-dark/10 hover:bg-dark/20 text-dark font-semibold px-6 py-3 rounded-lg transition-all" disabled="">
+                                重新测试
+                            </button>
+                        </div>
+                        
+                        <div class="md:w-2/3">
+                            <!-- 测试区域 -->
+                            <div id="quiz-container" class="relative bg-dark/5 rounded-xl overflow-hidden min-h-[400px] border-2 border-dark/10 p-6">
+                                <!-- 测试开始提示 -->
+                                <div id="quiz-intro" class="absolute inset-0 flex flex-col items-center justify-center z-20 bg-dark/70 text-white">
+                                    <i class="fa fa-question-circle text-6xl mb-4 text-accent"></i>
+                                    <h3 class="text-2xl font-bold mb-2">野生菌知识测试</h3>
+                                    <p class="mb-6 text-center px-4">准备好测试你对野生菌的了解了吗？点击开始按钮开始挑战！</p>
+                                </div>
+                                
+                                <!-- 问题容器 -->
+                                <div id="question-container" class="hidden h-full flex flex-col">
+                                    <div class="mb-8">
+                                        <h3 id="question-text" class="text-xl font-bold mb-2"></h3>
+                                        <p class="text-gray-500 text-sm" id="question-hint"></p>
+                                    </div>
+                                    
+                                    <div id="answers-container" class="grid grid-cols-1 gap-3 flex-grow"></div>
+                                    
+                                    <div class="mt-6">
+                                        <button id="next-question" class="bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-2 rounded-lg transition-all float-right hidden">
+                                            下一题 <i class="fa fa-arrow-right ml-1"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- 测试结果 -->
+                                <div id="quiz-results" class="hidden h-full flex flex-col items-center justify-center text-center p-6">
+                                    <div id="result-icon" class="text-6xl mb-4"></div>
+                                    <h3 id="result-title" class="text-2xl font-bold mb-2"></h3>
+                                    <p id="result-description" class="mb-6 max-w-md"></p>
+                                    <div class="mb-6 p-4 bg-light rounded-lg">
+                                        <p class="text-lg"><span class="font-bold">最终得分:</span> <span id="final-score" class="text-primary text-2xl">0</span>/100</p>
+                                        <p id="mushroom-title" class="text-accent font-bold mt-2"></p>
+                                    </div>
+                                    <button id="play-again" class="bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3 rounded-lg transition-all transform hover:scale-105">
+                                        再玩一次
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-16">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                <div>
+                    <div class="flex items-center mb-6">
+                        <i class="fa fa-leaf text-primary text-2xl mr-2"></i>
+                        <h3 class="text-xl font-bold">云南野生菌图鉴</h3>
+                    </div>
+                    <p class="text-gray-400 mb-6">
+                        探索云南丰富多彩的野生菌世界，了解常见野生菌和有毒野生菌的识别方法
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="bg-primary/20 hover:bg-primary/30 text-primary w-10 h-10 rounded-full flex items-center justify-center transition-colors">
+                            <i class="fa fa-weixin"></i>
+                        </a>
+                        <a href="#" class="bg-primary/20 hover:bg-primary/30 text-primary w-10 h-10 rounded-full flex items-center justify-center transition-colors">
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                        <a href="#" class="bg-primary/20 hover:bg-primary/30 text-primary w-10 h-10 rounded-full flex items-center justify-center transition-colors">
+                            <i class="fa fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-6">快速链接</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#home" class="text-gray-400 hover:text-primary transition-colors">首页</a></li>
+                        <li><a href="#intro" class="text-gray-400 hover:text-primary transition-colors">野生菌简介</a></li>
+                        <li><a href="#common" class="text-gray-400 hover:text-primary transition-colors">常见野生菌</a></li>
+                        <li><a href="#poisonous" class="text-gray-400 hover:text-primary transition-colors">有毒野生菌</a></li>
+                        <li><a href="#identification" class="text-gray-400 hover:text-primary transition-colors">识别方法</a></li>
+                        <li><a href="#quiz" class="text-gray-400 hover:text-primary transition-colors">趣味测试</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-4">订阅最新资讯</h4>
+                    <p class="text-gray-400 mb-4">第一时间获取云南野生菌的最新资讯和安全食用指南</p>
+                    <form class="flex">
+                        <input type="email" placeholder="你的邮箱地址" class="px-4 py-2 rounded-l-lg w-full focus:outline-none text-dark">
+                        <button type="submit" class="bg-primary hover:bg-primary/90 px-4 py-2 rounded-r-lg transition-colors">
+                            <i class="fa fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
+                <p>© 2025 云南野生菌图鉴 版权所有 | 本站仅供科普教育，不构成食用建议</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- 图片查看器模态框 -->
+    <div id="imageViewer" class="image-viewer">
+        <span class="close-btn" id="closeViewer">&times;</span>
+        <img id="viewerImage" src="" alt="查看图片">
+    </div>
+    
+    <!-- JavaScript -->
+    <script>
+        // 导航栏滚动效果
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            const progressBar = document.getElementById('progressBar');
+            
+            if (window.scrollY > 50) {
+                navbar.classList.add('bg-white/95', 'shadow-lg');
+                navbar.classList.remove('bg-white/90');
+            } else {
+                navbar.classList.remove('bg-white/95', 'shadow-lg');
+                navbar.classList.add('bg-white/90');
+            }
+            
+            // 滚动进度条
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            progressBar.style.width = scrolled + '%';
+        });
+        
+        // 移动端菜单
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuBtn.addEventListener('click', function() {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    // 关闭移动端菜单
+                    mobileMenu.classList.add('hidden');
+                    
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // 图片查看器
+        const imageViewer = document.getElementById('imageViewer');
+        const viewerImage = document.getElementById('viewerImage');
+        const closeViewer = document.getElementById('closeViewer');
+        
+        // 为所有蘑菇卡片图片添加点击事件
+        document.querySelectorAll('.mushroom-card img').forEach(img => {
+            img.addEventListener('click', function() {
+                viewerImage.src = this.src;
+                imageViewer.style.display = 'flex';
+            });
+        });
+        
+        // 关闭图片查看器
+        closeViewer.addEventListener('click', function() {
+            imageViewer.style.display = 'none';
+        });
+        
+        // 点击图片查看器外部关闭
+        imageViewer.addEventListener('click', function(e) {
+            if (e.target === imageViewer) {
+                imageViewer.style.display = 'none';
+            }
+        });
+        
+        // 数据可视化 - 野生菌种类分布
+        const ctx1 = document.getElementById('mushroomChart').getContext('2d');
+        const mushroomChart = new Chart(ctx1, {
+            type: 'doughnut',
+            data: {
+                labels: ['可食用', '有毒', '未知'],
+                datasets: [{
+                    data: [200, 100, 500],
+                    backgroundColor: ['#2E7D32', '#D32F2F', '#8D6E63'],
+                    borderColor: ['#2E7D32', '#D32F2F', '#8D6E63'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#FFFFFF',
+                            font: {
+                                size: 14
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: '云南野生菌种类分布',
+                        color: '#FFFFFF',
+                        font: {
+                            size: 18,
+                            weight: 'bold'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 数据可视化 - 中毒案件统计
+        const ctx2 = document.getElementById('poisoningChart').getContext('2d');
+        const poisoningChart = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: ['2020', '2021', '2022', '2023', '2024'],
+                datasets: [{
+                    label: '中毒人数',
+                    data: [120, 150, 110, 90, 80],
+                    backgroundColor: '#2E7D32',
+                    borderColor: '#2E7D32',
+                    borderWidth: 1
+                }, {
+                    label: '死亡人数',
+                    data: [10, 12, 8, 6, 5],
+                    backgroundColor: '#D32F2F',
+                    borderColor: '#D32F2F',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#FFFFFF'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#FFFFFF'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#FFFFFF',
+                            font: {
+                                size: 14
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: '2020-2024年野生菌中毒案件统计',
+                        color: '#FFFFFF',
+                        font: {
+                            size: 18,
+                            weight: 'bold'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 图表高度设置
+        document.getElementById('mushroomChart').style.height = '300px';
+        document.getElementById('poisoningChart').style.height = '300px';
+        
+        // 趣味测试
+        const startQuizBtn = document.getElementById('startQuiz');
+        
+        startQuizBtn.addEventListener('click', function() {
+            alert('野生菌知识趣味测试功能正在开发中，敬请期待！');
+        });
+        
+        // 添加页面加载动画
+        window.addEventListener('load', function() {
+            document.body.classList.add('fade-in');
+        });
+    </script>
+</body>
+</html>
+
+const questions = [
+    {
+        question: "请回答问题",
+        hint: "请回答问题",
+        answers: [
+            {
+                text: "请回答问题",
+                correct: 'true'
+            }
+        ]
+    }
+];
+
+// 初始化测试
+function initQuiz() {
+    currentQuestionIndex = 0;
+    score = 0;
+    timeLeft = 30;
+    answered = false;
+    quizProgress.textContent = `${currentQuestionIndex + 1}/5`;
+    progressBar.style.width = `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
+    quizScore.textContent = score;
+    quizTimer.textContent = `00:${timeLeft.toString().padStart(2, '0')}`;
+    resetQuizBtn.disabled = true;
+    startQuizBtn.disabled = false;
+    quizIntro.classList.remove('hidden');
+    questionContainer.classList.add('hidden');
+    quizResults.classList.add('hidden');
+}
+
+// 开始测试
+function startQuiz() {
+    quizIntro.classList.add('hidden');
+    questionContainer.classList.remove('hidden');
+    startQuizBtn.disabled = true;
+    resetQuizBtn.disabled = false;
+    showQuestion();
+}
+
+// 显示问题
+function showQuestion() {
+    const question = questions[currentQuestionIndex];
+    questionText.textContent = question.question;
+    questionHint.textContent = question.hint;
+    answersContainer.innerHTML = '';
+    answered = false;
+    timeLeft = 30;
+    quizTimer.textContent = `00:${timeLeft.toString().padStart(2, '0')}`;
+    nextQuestionBtn.classList.add('hidden');
+
+    // 创建答案选项
+    question.answers.forEach((answer, index) => {
+        const answerBtn = document.createElement('button');
+        answerBtn.textContent = answer.text;
+        answerBtn.className = 'bg-white hover:bg-primary/10 border-2 border-dark/10 rounded-lg py-3 px-4 text-left transition-all duration-300';
+        answerBtn.dataset.correct = answer.correct;
+        answerBtn.addEventListener('click', selectAnswer);
+        answersContainer.appendChild(answerBtn);
+    });
+
+    // 启动计时器
+    timer = setInterval(() => {
+        timeLeft--;
+        quizTimer.textContent = `00:${timeLeft.toString().padStart(2, '0')}`;
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            showNextButton();
+        }
+    }, 1000);
+}
+
+// 选择答案
+function selectAnswer(e) {
+    if (answered) return;
+    answered = true;
+    clearInterval(timer);
+
+    const selectedBtn = e.target;
+    const isCorrect = selectedBtn.dataset.correct === 'true';
+
+    // 更新按钮样式
+    const allBtns = answersContainer.querySelectorAll('button');
+    allBtns.forEach(btn => {
+        btn.disabled = true;
+        if (btn.dataset.correct === 'true') {
+            btn.classList.remove('bg-white', 'hover:bg-primary/10');
+            btn.classList.add('bg-primary/20', 'border-primary');
+        }
+        if (btn === selectedBtn) {
+            if (isCorrect) {
+                btn.classList.remove('bg-white', 'hover:bg-primary/10');
+                btn.classList.add('bg-primary/20', 'border-primary');
+                score += 20;
+                quizScore.textContent = score;
+            } else {
+                btn.classList.remove('bg-white', 'hover:bg-primary/10');
+                btn.classList.add('bg-red-100', 'border-red-500');
+            }
+        }
+    });
+
+    showNextButton();
+}
+
+// 显示下一题按钮
+function showNextButton() {
+    nextQuestionBtn.classList.remove('hidden');
+}
+
+// 下一题
+function nextQuestion() {
+    currentQuestionIndex++;
+    if (currentQuestionIndex < questions.length) {
+        quizProgress.textContent = `${currentQuestionIndex + 1}/5`;
+        progressBar.style.width = `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
+        showQuestion();
+    } else {
+        showResults();
+    }
+}
+
+// 显示结果
+function showResults() {
+    questionContainer.classList.add('hidden');
+    quizResults.classList.remove('hidden');
+    finalScore.textContent = score;
+
+    // 根据得分显示不同的结果
+    if (score >= 80) {
+        resultTitle.textContent = "恭喜你！";
+        resultDescription.textContent = "你对野生菌的了解非常深入，绝对是野生菌专家！";
+        mushroomTitle.textContent = "野生菌大师";
+        resultIcon.className = 'fa fa-trophy text-accent';
+    } else if (score >= 60) {
+        resultTitle.textContent = "表现不错！";
+        resultDescription.textContent = "你对野生菌有一定的了解，但还有提升的空间。";
+        mushroomTitle.textContent = "野生菌达人";
+        resultIcon.className = 'fa fa-star text-primary';
+    } else {
+        resultTitle.textContent = "继续努力！";
+        resultDescription.textContent = "你对野生菌的了解还比较有限，建议多学习相关知识。";
+        mushroomTitle.textContent = "菌子新手";
+        resultIcon.className = 'fa fa-leaf text-gray-400';
+    }
+}
+
+// 事件监听器
+startQuizBtn.addEventListener('click', startQuiz);
+resetQuizBtn.addEventListener('click', initQuiz);
+nextQuestionBtn.addEventListener('click', nextQuestion);
+playAgainBtn.addEventListener('click', initQuiz);
+
+// 初始化
+initQuiz();
+}
+
+// 页面加载完成后初始化所有功能
+document.addEventListener('DOMContentLoaded', function() {
+    // 创建菌子装饰
+    const identificationSection = document.getElementById('identification');
+    
+    // 初始化图片查看器
+    setupImageViewer();
+    
+    // 初始化图表
+    setupCharts();
+    
+    // 初始化趣味测试
+    setupQuiz();
+});
